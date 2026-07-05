@@ -1,77 +1,126 @@
 name: Deployment
+
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+
 jobs:
+
   lint:
     runs-on: ubuntu-latest
+
+    outputs:
+      cache-hit: ${{ steps.cache-action.outputs.cache-hit }}
+
     steps:
-      - name: Get code
-        uses: actions/checkout@v3
-      - name: Custom action to cache dependencies
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Dependencies
         id: cache-action
-        uses: ./.github/actions/cache-depen 
+        uses: ./.github/actions/cache-depen
         with:
-          want-cache: 'false'
-      - name: Lint code
-        run: npm run lint
+          want-cache: "false"
+
+      - name: Print Step Output
+        run: |
+          echo "Step Output = ${{ steps.cache-action.outputs.cache-hit }}"
+
+      - name: Lint
+        run: echo "Running Linter"
+
+
   test:
     runs-on: ubuntu-latest
+
+    outputs:
+      cache-hit: ${{ steps.cache-action.outputs.cache-hit }}
+
     steps:
-      - name: Get code
-        uses: actions/checkout@v3
-      - name: Custom action to cache dependencies
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Dependencies
         id: cache-action
         uses: ./.github/actions/cache-depen
         with:
-          want-cache: 'true'
-      - name: Test code
-        id: run-tests
-        run: npm run test
-      - name: Upload test report
-        if: failure() && steps.run-tests.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-report
-          path: test.json
+          want-cache: "true"
+
+      - name: Print Step Output
+        run: |
+          echo "Step Output = ${{ steps.cache-action.outputs.cache-hit }}"
+
+      - name: Test
+        run: echo "Running Tests"
+
+
   build:
     needs: test
+
     runs-on: ubuntu-latest
+
+    outputs:
+      cache-hit: ${{ steps.cache-action.outputs.cache-hit }}
+
     steps:
-      - name: Get code
-        uses: actions/checkout@v3
-      - name: Custom action to cache dependencies
+      - uses: actions/checkout@v4
+
+      - name: Cache Dependencies
         id: cache-action
         uses: ./.github/actions/cache-depen
-      - name: Build website
-        run: npm run build
-      - name: Upload artifacts
+
+      - run: echo "Building Project"
+
+      - run: mkdir dist
+
+      - run: echo "Hello" > dist/file.txt
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-files
           path: dist
+
+
   deploy:
     needs: build
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Get code
-        uses: actions/checkout@v3
-      - name: Get build artifacts
+      - uses: actions/checkout@v4
+
+      - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: dist-files
           path: ./dist
-      - name: Output contents
-        run: ls
-      - name: Deploy site
-        run: echo "Deploying..."
 
-  outputs:
-    needs: [lint, deploy]
+      - run: ls -R
+
+      - run: echo "Deploying..."
+
+
+  print-outputs:
+    needs:
+      - lint
+      - test
+      - build
+      - deploy
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Print outputs
+      - name: Print Job Outputs
         run: |
-          echo "Lint job cache hit: ${{ steps.cache-action.outputs.cache-hit }}"
-          echo "Test job cache hit: ${{ steps.cache-action.outputs.cache-hit }}"
+          echo "=============================="
+          echo "Lint Job Output"
+          echo "${{ needs.lint.outputs.cache-hit }}"
+          echo
+
+          echo "Test Job Output"
+          echo "${{ needs.test.outputs.cache-hit }}"
+          echo
+
+          echo "Build Job Output"
+          echo "${{ needs.build.outputs.cache-hit }}"
+          echo "=============================="

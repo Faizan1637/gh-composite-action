@@ -1,32 +1,40 @@
 name: Cache Dependencies
-description: Caches dependencies for Node.js projects
+description: Caches Node.js dependencies
+
 inputs:
   want-cache:
-    description: 'Whether to cache dependencies or not'
-    required: true
-    default: 'true'
+    description: Whether to use cache
+    required: false
+    default: "true"
 
 outputs:
   cache-hit:
-    description: 'Whether the cache was hit or not'
+    description: Whether cache was hit
     value: ${{ steps.set-output.outputs.cache-hit }}
 
 runs:
-  using: "composite"
+  using: composite
+
   steps:
     - name: Cache dependencies
       if: inputs.want-cache == 'true'
       id: cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: node_modules
         key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
     - name: Install dependencies
-      if: steps.cache.outputs.cache-hit != 'true' || inputs.want-cache == 'false'
-      run: npm ci
+      if: inputs.want-cache == 'false' || steps.cache.outputs.cache-hit != 'true'
       shell: bash
+      run: npm ci
+
     - name: Set output
       id: set-output
       shell: bash
       run: |
-        echo "cache-hit=${{ steps.cache.outputs.cache-hit }}" >> $GITHUB_OUTPUT
+        if [ "${{ inputs.want-cache }}" = "false" ]; then
+          echo "cache-hit=cache-disabled" >> $GITHUB_OUTPUT
+        else
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}" >> $GITHUB_OUTPUT
+        fi
