@@ -9,7 +9,7 @@ inputs:
 outputs:
   cache-hit:
     description: 'Whether the cache was hit or not'
-    value: ${{ steps.cache.outputs.cache-hit }}
+    value: ${{ inputs.want-cache}}
 
 runs:
   using: "composite"
