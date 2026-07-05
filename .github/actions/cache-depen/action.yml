@@ -9,7 +9,7 @@ inputs:
 outputs:
   cache-hit:
     description: 'Whether the cache was hit or not'
-    value: ${{ inputs.want-cache}}
+    value: "Faizan hardcoded value for testing"
 
 runs:
   using: "composite"
