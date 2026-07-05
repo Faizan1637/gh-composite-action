@@ -10,6 +10,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Custom action to cache dependencies
+        id: cache-action
         uses: ./.github/actions/cache-depen 
         with:
           want-cache: 'false'
@@ -21,6 +22,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Custom action to cache dependencies
+        id: cache-action
         uses: ./.github/actions/cache-depen
         with:
           want-cache: 'true'
@@ -40,6 +42,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Custom action to cache dependencies
+        id: cache-action
         uses: ./.github/actions/cache-depen
       - name: Build website
         run: npm run build
@@ -70,5 +73,5 @@ jobs:
     steps:
       - name: Print outputs
         run: |
-          echo "Lint job cache hit: ${{ needs.lint.outputs.cache-hit }}"
-          echo "Test job cache hit: ${{ needs.test.outputs.cache-hit }}"
+          echo "Lint job cache hit: ${{ steps.cache-action.outputs.cache-hit }}"
+          echo "Test job cache hit: ${{ steps.cache-action.outputs.cache-hit }}"
