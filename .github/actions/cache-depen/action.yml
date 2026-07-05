@@ -9,7 +9,7 @@ inputs:
 outputs:
   cache-hit:
     description: 'Whether the cache was hit or not'
-    value: "Faizan hardcoded value for testing"
+    value: ${{ steps.cache.outputs.cache-hit }}
 
 runs:
   using: "composite"
@@ -25,3 +25,8 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true' || inputs.want-cache == 'false'
       run: npm ci
       shell: bash
+    - name: Set output
+      id: set-output
+      shell: bash
+      run: |
+        echo "cache-hit=${{ steps.cache.outputs.cache-hit }}" >> $GITHUB_OUTPUT
